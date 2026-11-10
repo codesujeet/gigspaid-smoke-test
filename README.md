@@ -2,6 +2,35 @@
 
 A Playwright (TypeScript) test suite for the public pages of https://gigspaid.com. It runs on **desktop Chrome** and a **mobile viewport (Pixel 7)**.
 
+**Status of the latest run:** 96 passed, 10 skipped (desktop-only checks on mobile), 0 failed; slowest page showed content in 2.85 s (budget 5 s). Full output at the [bottom](#latest-run).
+
+## Quick start
+
+```bash
+npm ci
+npx playwright install chromium
+npx playwright test --grep @core     # just the brief: 6 pages x 2 viewports (about 1 min)
+npx playwright test                  # everything (about 6 min)
+```
+
+**Contents:** [The brief](#the-brief-core-smoke-test) · [Extra coverage](#extra-coverage) · [Run it](#run-it) · [Project layout](#project-layout) · [Design decisions](#design-decisions) · [Findings about the live site](#findings-about-the-live-site) · [Latest run](#latest-run)
+
+## Project layout
+
+```text
+playwright.config.ts          2 projects (desktop-chrome, mobile-chrome), 1 worker, no retries
+tests/
+  smoke.spec.ts               the brief: no console errors, not blank, content within 5 s
+  page-quality.spec.ts        metadata, one h1, overflow, alt text, skip link, axe-core
+  navigation.spec.ts          footer/header links, back/forward, reload, 404 links, listings
+  network.spec.ts             HTTPS/headers, manifest, assets, /api/me, known path-404 bug
+  support/
+    routes.ts                 route table, 5 s budget and other constants
+    problems.ts               console/exception/HTTP error collector (+ the one /api/me 401 exception)
+    content.ts                "is the page rendered, not blank" check and timing loop
+    fixtures.ts               Playwright fixture that attaches the collector to every test
+```
+
 ## The brief (core smoke test)
 
 [`tests/smoke.spec.ts`](tests/smoke.spec.ts) opens `/`, `/#/work`, `/#/bounties`, `/#/leaderboard`, `/#/hire` and a 404 route (`/#/this-route-does-not-exist`, the app's in-app 404 page) and **fails if a page**:
